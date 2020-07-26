@@ -12,8 +12,8 @@ class MyWeather extends StatelessWidget {
       title: 'MyWeather',
 
       theme: ThemeData(primaryColor: Color.fromRGBO(58, 66, 86, 1.0)),
-
-      initialRoute: WeatherForecastScreen.routeName,
+      
+      home: WeatherForecastScreen(),
     );
   }
 }

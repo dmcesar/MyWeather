@@ -8,19 +8,28 @@ class MeteorologyService {
 
   String _baseURL = "https://api.ipma.pt/open-data/forecast/meteorology/cities/daily";
 
-  Future<List<MeteorologyData>> fetchMeteorologyDataUntil5DaysByLocal(int globalLocalID) async {
+  StreamController _controller = StreamController();
+
+  Sink get _input => _controller.sink;
+  Stream get output => _controller.stream;
+
+  void fetchMeteorologyDataUntil5DaysByLocal(int globalLocalID) async {
 
     final endpointURL = "${this._baseURL}/$globalLocalID.json";
 
-    final response = await http.get(this._baseURL + endpointURL);
+    final response = await http.get(endpointURL);
 
     if(response.statusCode == 200) {
 
       var responseJSON = json.decode(response.body);
 
-      return(responseJSON as List)
-          .map((o) => MeteorologyData.fromJson(o))
-          .toList();
+      List<dynamic> data = responseJSON["data"];
+
+      _input.add(
+          data
+              .map((o) => MeteorologyData.fromJson(o))
+              .toList()
+      );
 
     } else {
 
@@ -28,23 +37,31 @@ class MeteorologyService {
     }
   }
 
-  Future<List<MeteorologyData>> fetchMeteorologyDataUntil3DaysByDay(int dayID) async {
+  void fetchMeteorologyDataUntil3DaysByDay(int dayID) async {
 
-    final endpointURL = "${this._baseURL}/hp-daily-forecast-day/$dayID.json";
+    final endpointURL = "${this._baseURL}/hp-daily-forecast-day$dayID.json";
 
-    final response = await http.get(this._baseURL + endpointURL);
+    final response = await http.get(endpointURL);
 
     if(response.statusCode == 200) {
 
       var responseJSON = json.decode(response.body);
 
-      return(responseJSON as List)
-          .map((o) => MeteorologyData.fromJson(o))
-          .toList();
+      List<dynamic> data = responseJSON["data"];
+
+      _input.add(
+          data
+              .map((o) => MeteorologyData.fromJson(o))
+              .toList()
+      );
 
     } else {
+
+      print(response.statusCode);
 
       throw Exception('Failed to load Meteorology Data');
     }
   }
+
+  void dispose() => _controller.close();
 }

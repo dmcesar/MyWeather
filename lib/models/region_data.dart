@@ -1,4 +1,4 @@
-class LocationData {
+class RegionData {
 
   final int globalIdLocal;
   final String local;
@@ -9,7 +9,7 @@ class LocationData {
   final String latitude;
   final String longitude;
 
-  LocationData({
+  RegionData({
     this.globalIdLocal,
     this.local,
     this.idRegion,
@@ -19,8 +19,8 @@ class LocationData {
     this.latitude,
     this.longitude});
 
-  factory LocationData.fromJson(Map<String, dynamic> json) {
-    return LocationData(
+  factory RegionData.fromJson(Map<String, dynamic> json) {
+    return RegionData(
       globalIdLocal: json['globalIdLocal'],
       local: json['local'],
       idRegion: json['idRegion'],

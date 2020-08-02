@@ -1,7 +1,11 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:myweather/blocs/weather_forecast.dart';
 import 'package:myweather/models/geo_json.dart';
+import 'package:myweather/models/meteorology_data.dart';
 
 class WeatherForecastScreen extends StatefulWidget {
 
@@ -15,6 +19,8 @@ class WeatherForecastScreen extends StatefulWidget {
 
 class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
 
+  final _weatherForecast = WeatherForecast();
+
   GoogleMapController _mapController;
 
   Location location = new Location();
@@ -26,22 +32,23 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
   LatLngBounds _bounds;
   LatLng _center;
 
+  // Map elements
+  Set<Marker> _markers = HashSet<Marker>();
+
+  // Map elements' Ids
+  int _markerIdCnt = 1;
+
   @override
   void initState() {
-
     _checkLocationPermission();
 
-    if(_locationData != null) {
-
+    if (_locationData != null) {
       _center =
           LatLng(_locationData.latitude, _locationData.longitude);
-
     } else {
-
       _center =
           LatLng(GeoJson.CENTER_COORDINATES[0], GeoJson.CENTER_COORDINATES[1]);
     }
-
     _bounds = LatLngBounds(
         northeast: LatLng(
           GeoJson.NORTHEAST_BOUND[0],
@@ -52,6 +59,19 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
           GeoJson.SOUTHWEST_BOUND[1],
         )
     );
+
+    // Request weather data for the day
+    _weatherForecast.requestMeteorologyDataUntil3DaysByDay();
+
+    // Listen for async response from stream
+    _weatherForecast.output.listen((data) {
+
+      // Cast received data to List of MeteorologyData
+      final List<MeteorologyData> meteorologyData = data as List;
+
+      // Pin markers to map
+      _pinMarkers(meteorologyData);
+    });
 
     super.initState();
   }
@@ -91,6 +111,28 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
     }
   }
 
+  void _pinMarkers(List<MeteorologyData> data) {
+
+    data.forEach( (element) {
+
+      final String markerIdVal = 'marker_id_${_markerIdCnt++}';
+
+      setState(() {
+
+        print('Added Marker | Latitude: ${element
+            .latitude} | Longitude: ${element.longitude}');
+
+        _markers.add(Marker(
+          markerId: MarkerId(markerIdVal),
+          position: LatLng(
+              double.parse(element.latitude),
+              double.parse(element.longitude),
+          ),
+        ));
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -102,6 +144,11 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
 
         body: Stack(
           children: <Widget>[
+            //StreamBuilder(
+              //stream: weatherForecast.output,
+              //builder: (BuildContext context, snapshot) =>
+              // add snapshot.data,
+            //)
             GoogleMap(
               onMapCreated: (GoogleMapController controller) {
                 _mapController = controller;
@@ -116,9 +163,20 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
               ),
               buildingsEnabled: false,
               trafficEnabled: false,
+              compassEnabled: true,
+              myLocationButtonEnabled: true,
+              myLocationEnabled: true,
+              markers: _markers,
             ),
           ],
         )
     );
+  }
+
+  @override
+  void dispose() {
+
+    _weatherForecast.dispose();
+    super.dispose();
   }
 }

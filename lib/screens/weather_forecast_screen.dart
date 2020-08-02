@@ -1,9 +1,7 @@
-import 'package:flutter/cupertino.dart';
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
+import 'package:location/location.dart';
+import 'package:myweather/models/geo_json.dart';
 
 class WeatherForecastScreen extends StatefulWidget {
 
@@ -17,39 +15,110 @@ class WeatherForecastScreen extends StatefulWidget {
 
 class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
 
-  Completer<GoogleMapController> _controller = Completer();
+  GoogleMapController _mapController;
 
-  static final CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.4746,
-  );
+  Location location = new Location();
 
-  static final CameraPosition _kLake = CameraPosition(
-      bearing: 192.8334901395799,
-      target: LatLng(37.43296265331129, -122.08832357078792),
-      tilt: 59.440717697143555,
-      zoom: 19.151926040649414);
+  bool _serviceEnabled;
+  PermissionStatus _permissionGranted;
+  LocationData _locationData;
+
+  LatLngBounds _bounds;
+  LatLng _center;
+
+  @override
+  void initState() {
+
+    _checkLocationPermission();
+
+    if(_locationData != null) {
+
+      _center =
+          LatLng(_locationData.latitude, _locationData.longitude);
+
+    } else {
+
+      _center =
+          LatLng(GeoJson.CENTER_COORDINATES[0], GeoJson.CENTER_COORDINATES[1]);
+    }
+
+    _bounds = LatLngBounds(
+        northeast: LatLng(
+          GeoJson.NORTHEAST_BOUND[0],
+          GeoJson.NORTHEAST_BOUND[1],
+        ),
+        southwest: LatLng(
+          GeoJson.SOUTHWEST_BOUND[0],
+          GeoJson.SOUTHWEST_BOUND[1],
+        )
+    );
+
+    super.initState();
+  }
+
+  void _checkLocationPermission() async {
+
+    _serviceEnabled = await location.serviceEnabled();
+    if(!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      if(!_serviceEnabled) {
+        return;
+      }
+    }
+    _permissionGranted = await location.hasPermission();
+    if(_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await location.requestPermission();
+      if(_permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+
+    _locationData = await location.getLocation();
+
+    if(_mapController != null) {
+
+      _mapController.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: LatLng(
+              _locationData.latitude,
+              _locationData.longitude,
+            ),
+            zoom: 6,
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      body: GoogleMap(
-        mapType: MapType.hybrid,
-        initialCameraPosition: _kGooglePlex,
-        onMapCreated: (GoogleMapController controller) {
-          _controller.complete(controller);
-        },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _goToTheLake,
-        label: Text('To the lake!'),
-        icon: Icon(Icons.directions_boat),
-      ),
-    );
-  }
 
-  Future<void> _goToTheLake() async {
-    final GoogleMapController controller = await _controller.future;
-    controller.animateCamera(CameraUpdate.newCameraPosition(_kLake));
+    return new Scaffold(
+
+        appBar: AppBar(
+          title: const Text('MyWeather'),
+        ),
+
+        body: Stack(
+          children: <Widget>[
+            GoogleMap(
+              onMapCreated: (GoogleMapController controller) {
+                _mapController = controller;
+              },
+              initialCameraPosition: CameraPosition(
+                target: _center,
+                zoom: 6,
+              ),
+              mapType: MapType.satellite,
+              cameraTargetBounds: CameraTargetBounds(
+                _bounds,
+              ),
+              buildingsEnabled: false,
+              trafficEnabled: false,
+            ),
+          ],
+        )
+    );
   }
 }

@@ -10,9 +10,10 @@ class MyWeather extends StatelessWidget {
 
     return MaterialApp(
       title: 'MyWeather',
+      debugShowCheckedModeBanner: false,
 
       theme: ThemeData(primaryColor: Color.fromRGBO(58, 66, 86, 1.0)),
-      
+
       home: WeatherForecastScreen(),
     );
   }

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:myweather/models/location_data.dart';
+import 'package:myweather/models/region_data.dart';
 
 class AuxService {
 

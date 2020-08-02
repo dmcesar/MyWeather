@@ -34,6 +34,7 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
 
   // Map elements
   Set<Marker> _markers = HashSet<Marker>();
+  final Color _selectedColor = Colors.amber;
 
   // Map elements' Ids
   int _markerIdCnt = 1;
@@ -61,7 +62,7 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
     );
 
     // Request weather data for the day
-    _weatherForecast.requestMeteorologyDataUntil3DaysByDay();
+    _weatherForecast.requestMeteorologyDataUntil3DaysByDay(0);
 
     // Listen for async response from stream
     _weatherForecast.output.listen((data) {
@@ -125,9 +126,10 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
         _markers.add(Marker(
           markerId: MarkerId(markerIdVal),
           position: LatLng(
-              double.parse(element.latitude),
-              double.parse(element.longitude),
+            double.parse(element.latitude),
+            double.parse(element.longitude),
           ),
+          consumeTapEvents: true,
         ));
       });
     });
@@ -135,7 +137,6 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return new Scaffold(
 
         appBar: AppBar(
@@ -144,11 +145,6 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
 
         body: Stack(
           children: <Widget>[
-            //StreamBuilder(
-              //stream: weatherForecast.output,
-              //builder: (BuildContext context, snapshot) =>
-              // add snapshot.data,
-            //)
             GoogleMap(
               onMapCreated: (GoogleMapController controller) {
                 _mapController = controller;
@@ -164,9 +160,43 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
               buildingsEnabled: false,
               trafficEnabled: false,
               compassEnabled: true,
-              myLocationButtonEnabled: true,
-              myLocationEnabled: true,
+              zoomControlsEnabled: false,
               markers: _markers,
+            ),
+            Align(
+              alignment: Alignment.topCenter,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  Expanded(
+                    child: RaisedButton(
+                      color: Colors.white,
+                      child: Text(
+                        "TODAY",
+                        style: TextStyle(color: _selectedColor),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: RaisedButton(
+                      color: Colors.black54,
+                      child: Text(
+                        "TOMOROW",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: RaisedButton(
+                      color: Colors.black54,
+                      child: Text(
+                        "OVERMORROW",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         )

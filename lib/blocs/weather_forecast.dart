@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:myweather/models/region_data.dart';
 import 'package:myweather/services/aux_service.dart';
 import 'package:myweather/services/meteorology_service.dart';
 
@@ -16,11 +15,9 @@ class WeatherForecast {
   Sink get _input => _controller.sink;
   Stream get output => _controller.stream;
 
-  void requestMeteorologyDataUntil3DaysByDay() {
+  void requestMeteorologyDataUntil3DaysByDay(int dayID) {
 
-    const currentDayID = 0;
-
-    _meteorologyService.fetchMeteorologyDataUntil3DaysByDay(currentDayID);
+    _meteorologyService.fetchMeteorologyDataUntil3DaysByDay(dayID);
 
     _meteorologyService.output.listen((data) {
 

@@ -20,25 +20,40 @@ class WeatherForecastScreen extends StatefulWidget {
 
 class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
 
+  // BLoC
   final _weatherForecast = WeatherForecast();
 
+  // Handles map events
   GoogleMapController _mapController;
 
+  // Location related
   Location location = new Location();
 
   bool _serviceEnabled;
   PermissionStatus _permissionGranted;
   LocationData _locationData;
 
+  // Map's center coordinates and bounds
   LatLngBounds _bounds;
   LatLng _center;
 
   // Map elements
   Set<Marker> _markers = HashSet<Marker>();
-  final Color _selectedColor = Colors.amber;
 
   // Map elements' Ids
   int _markerIdCnt = 1;
+
+  // Used to toggle buttons' states
+  bool _todayButSelected = true;
+  bool _tomorrowButSelected = false;
+  bool _overmorrowButSelected = false;
+
+  // Button's selected color
+  final Color _selectedButColor = Colors.amber;
+
+  // Button's default color
+  final Color _defaultButColor = Colors.white;
+
 
   @override
   void initState() {
@@ -178,11 +193,20 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
                 children: <Widget>[
                   Expanded(
                     child: RaisedButton(
-                      color: Colors.white,
+                      color: Colors.black54,
                       child: Text(
                         appLocalizations.today,
-                        style: TextStyle(color: _selectedColor),
+                        style: TextStyle(
+                            color: _todayButSelected ? _selectedButColor : _defaultButColor,
+                        ),
                       ),
+                      onPressed: () => setState(() =>
+                      // ignore: sdk_version_set_literal
+                      {
+                        _todayButSelected = !_todayButSelected,
+                        _tomorrowButSelected = false,
+                        _overmorrowButSelected = false,
+                      }),
                     ),
                   ),
                   Expanded(
@@ -190,8 +214,17 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
                       color: Colors.black54,
                       child: Text(
                         appLocalizations.tomorrow,
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(
+                            color: _tomorrowButSelected ? _selectedButColor : _defaultButColor,
+                        ),
                       ),
+                      onPressed: () => setState(() =>
+                      // ignore: sdk_version_set_literal
+                      {
+                        _tomorrowButSelected = !_tomorrowButSelected,
+                        _todayButSelected = false,
+                        _overmorrowButSelected = false,
+                      }),
                     ),
                   ),
                   Expanded(
@@ -199,8 +232,17 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
                       color: Colors.black54,
                       child: Text(
                         appLocalizations.overmorrow,
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(
+                            color: _overmorrowButSelected ? _selectedButColor : _defaultButColor,
+                        ),
                       ),
+                      onPressed: () => setState(() =>
+                      // ignore: sdk_version_set_literal
+                      {
+                        _overmorrowButSelected = !_overmorrowButSelected,
+                        _todayButSelected = false,
+                        _tomorrowButSelected = false,
+                      }),
                     ),
                   ),
                 ],

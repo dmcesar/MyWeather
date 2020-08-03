@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:myweather/app_localizations.dart';
 import 'package:myweather/blocs/weather_forecast.dart';
 import 'package:myweather/models/geo_json.dart';
 import 'package:myweather/models/meteorology_data.dart';
@@ -137,6 +138,13 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    // Get devices localization
+    final Locale myLocale = Localizations.localeOf(context);
+
+    // Create instance of AppLocalizations to internationalize app
+    final AppLocalizations appLocalizations = AppLocalizations(myLocale);
+
     return new Scaffold(
 
         appBar: AppBar(
@@ -172,7 +180,7 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
                     child: RaisedButton(
                       color: Colors.white,
                       child: Text(
-                        "TODAY",
+                        appLocalizations.today,
                         style: TextStyle(color: _selectedColor),
                       ),
                     ),
@@ -181,7 +189,7 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
                     child: RaisedButton(
                       color: Colors.black54,
                       child: Text(
-                        "TOMOROW",
+                        appLocalizations.tomorrow,
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
@@ -190,7 +198,7 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
                     child: RaisedButton(
                       color: Colors.black54,
                       child: Text(
-                        "OVERMORROW",
+                        appLocalizations.overmorrow,
                         style: TextStyle(color: Colors.white),
                       ),
                     ),

@@ -7,6 +7,8 @@ import 'package:myweather/app_localizations.dart';
 import 'package:myweather/blocs/weather_forecast.dart';
 import 'package:myweather/models/geo_json.dart';
 import 'package:myweather/models/meteorology_data.dart';
+import 'package:date_format/date_format.dart';
+
 
 class WeatherForecastScreen extends StatefulWidget {
 
@@ -53,7 +55,6 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
 
   // Button's default color
   final Color _defaultButColor = Colors.white;
-
 
   @override
   void initState() {
@@ -151,14 +152,44 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
     });
   }
 
-  @override
+  String _getTodayDate() {
+
+    final DateTime now = DateTime.now();
+
+    return formatDate(
+        now,
+        [dd, "/", mm],
+    );
+  }
+
+  String _getTomorrowDate() {
+
+    final DateTime now = DateTime.now();
+
+    final DateTime tomorrow = DateTime(now.year, now.month, now.day + 1);
+
+    return formatDate(
+      tomorrow,
+      [dd, "/", mm],
+    );  }
+
+  String _getOvermorrowDate() {
+
+    final DateTime now = DateTime.now();
+
+    final DateTime overmorrow = DateTime(now.year, now.month, now.day + 2);
+
+    return formatDate(
+      overmorrow,
+      [dd, "/", mm],
+    );
+  }
+
+    @override
   Widget build(BuildContext context) {
 
-    // Get devices localization
-    final Locale myLocale = Localizations.localeOf(context);
-
     // Create instance of AppLocalizations to internationalize app
-    final AppLocalizations appLocalizations = AppLocalizations(myLocale);
+    final AppLocalizations appLocalizations = AppLocalizations(Localizations.localeOf(context));
 
     return new Scaffold(
 
@@ -193,9 +224,9 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
                 children: <Widget>[
                   Expanded(
                     child: RaisedButton(
-                      color: Colors.black54,
+                      color: Colors.black54.withOpacity(0.25),
                       child: Text(
-                        appLocalizations.today,
+                        _getTodayDate(),
                         style: TextStyle(
                             color: _todayButSelected ? _selectedButColor : _defaultButColor,
                         ),
@@ -211,9 +242,9 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
                   ),
                   Expanded(
                     child: RaisedButton(
-                      color: Colors.black54,
+                      color: Colors.black54.withOpacity(0.25),
                       child: Text(
-                        appLocalizations.tomorrow,
+                        _getTomorrowDate(),
                         style: TextStyle(
                             color: _tomorrowButSelected ? _selectedButColor : _defaultButColor,
                         ),
@@ -229,9 +260,9 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
                   ),
                   Expanded(
                     child: RaisedButton(
-                      color: Colors.black54,
+                      color: Colors.black54.withOpacity(0.25),
                       child: Text(
-                        appLocalizations.overmorrow,
+                        _getOvermorrowDate(),
                         style: TextStyle(
                             color: _overmorrowButSelected ? _selectedButColor : _defaultButColor,
                         ),

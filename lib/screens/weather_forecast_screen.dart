@@ -9,7 +9,6 @@ import 'package:myweather/models/geo_json.dart';
 import 'package:myweather/models/meteorology_data.dart';
 import 'package:date_format/date_format.dart';
 
-
 class WeatherForecastScreen extends StatefulWidget {
 
   static const routeName = "/weather-forecast";
@@ -40,9 +39,11 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
   LatLng _center;
 
   // Map elements
+  Set<Polygon> _polygons = HashSet<Polygon>();
   Set<Marker> _markers = HashSet<Marker>();
 
   // Map elements' Ids
+  int _polygonIdCnt = 1;
   int _markerIdCnt = 1;
 
   // Used to toggle buttons' states
@@ -58,25 +59,10 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
 
   @override
   void initState() {
+
     _checkLocationPermission();
 
-    if (_locationData != null) {
-      _center =
-          LatLng(_locationData.latitude, _locationData.longitude);
-    } else {
-      _center =
-          LatLng(GeoJson.CENTER_COORDINATES[0], GeoJson.CENTER_COORDINATES[1]);
-    }
-    _bounds = LatLngBounds(
-        northeast: LatLng(
-          GeoJson.NORTHEAST_BOUND[0],
-          GeoJson.NORTHEAST_BOUND[1],
-        ),
-        southwest: LatLng(
-          GeoJson.SOUTHWEST_BOUND[0],
-          GeoJson.SOUTHWEST_BOUND[1],
-        )
-    );
+    _initMapArgs();
 
     // Request weather data for the day
     _weatherForecast.requestMeteorologyDataUntil3DaysByDay(0);
@@ -122,9 +108,57 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
               _locationData.latitude,
               _locationData.longitude,
             ),
-            zoom: 6,
+            zoom: 7,
           ),
         ),
+      );
+    }
+  }
+
+  void _initMapArgs() {
+    if (_locationData != null) {
+      _center =
+          LatLng(_locationData.latitude, _locationData.longitude);
+    } else {
+      _center =
+          LatLng(GeoJson.CENTER_COORDINATES[0], GeoJson.CENTER_COORDINATES[1]);
+    }
+    _bounds = LatLngBounds(
+        northeast: LatLng(
+          GeoJson.NORTHEAST_BOUND[0],
+          GeoJson.NORTHEAST_BOUND[1],
+        ),
+        southwest: LatLng(
+          GeoJson.SOUTHWEST_BOUND[0],
+          GeoJson.SOUTHWEST_BOUND[1],
+        )
+    );
+
+    for (int cntPolygons = 0; cntPolygons <
+        GeoJson.BORDERS.length; cntPolygons++) {
+      List<LatLng> points = List();
+
+      for (int cntPoints = 0; cntPoints <
+          GeoJson.BORDERS[cntPolygons].length; cntPoints++) {
+        points.add(
+            LatLng(
+                GeoJson.BORDERS[cntPolygons][cntPoints][1],
+                GeoJson.BORDERS[cntPolygons][cntPoints][0]
+            )
+        );
+      }
+
+      final String polygonIdVal = 'polygon_id_${_polygonIdCnt++}';
+
+      _polygons.add(
+          Polygon(
+            polygonId: PolygonId(polygonIdVal),
+            points: points,
+            consumeTapEvents: true,
+            strokeColor: _selectedButColor,
+            strokeWidth: 1,
+            fillColor: Colors.transparent,
+          )
       );
     }
   }
@@ -141,12 +175,13 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
             .latitude} | Longitude: ${element.longitude}');
 
         _markers.add(Marker(
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueCyan),
           markerId: MarkerId(markerIdVal),
           position: LatLng(
             double.parse(element.latitude),
             double.parse(element.longitude),
           ),
-          consumeTapEvents: true,
+          consumeTapEvents: false,
         ));
       });
     });
@@ -185,7 +220,7 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
     );
   }
 
-    @override
+  @override
   Widget build(BuildContext context) {
 
     // Create instance of AppLocalizations to internationalize app
@@ -205,17 +240,20 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
               },
               initialCameraPosition: CameraPosition(
                 target: _center,
-                zoom: 6,
               ),
+              minMaxZoomPreference: MinMaxZoomPreference(6.0, 7.0),
               mapType: MapType.satellite,
               cameraTargetBounds: CameraTargetBounds(
                 _bounds,
               ),
+              rotateGesturesEnabled: false,
+              tiltGesturesEnabled: false,
               buildingsEnabled: false,
               trafficEnabled: false,
               compassEnabled: true,
-              zoomControlsEnabled: false,
+              zoomControlsEnabled: true,
               markers: _markers,
+              polygons: _polygons,
             ),
             Align(
               alignment: Alignment.topCenter,

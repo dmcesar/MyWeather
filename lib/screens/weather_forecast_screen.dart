@@ -201,6 +201,7 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
       markers.add(marker);
     }
 
+    
     // Update markers collection
     _pinMarkers(markers);
   }

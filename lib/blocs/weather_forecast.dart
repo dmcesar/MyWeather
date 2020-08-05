@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:date_format/date_format.dart';
 import 'package:flutter/services.dart';
 import 'package:myweather/models/meteorology_data.dart';
 import 'package:myweather/models/weather_descriptor_data.dart';
@@ -36,16 +35,73 @@ class WeatherForecast {
   }
 
   Future<Uint8List> getMarkerIcon(List<WeatherDescriptor> weatherDescriptors, MeteorologyData data) async {
+    for (var cnt = 0; cnt < weatherDescriptors.length; cnt++)
 
-    for(var cnt = 0; cnt < weatherDescriptors.length; cnt++)
+      if (weatherDescriptors[cnt].idWeatherType == data.idWeatherType) {
+        switch (weatherDescriptors[cnt].descWeatherTypeEN.toUpperCase()) {
+          case 'CLEAR SKY':
+            {
+              return await _getBytesFromAsset('lib/assets/sunny.png', 90);
+            }
 
-      if(weatherDescriptors[cnt].idWeatherType == data.idWeatherType) {
+          case 'PARTLY CLOUDY':
+            {
+              return await _getBytesFromAsset(
+                  'lib/assets/partly_cloudy.png', 90);
+            }
 
-        // IDs match.
-        // TODO: Return associated asset
+          case 'CLOUDY (HIGH CLOUD)':
+          case 'CONVECTIVE CLOUDS':
+            {
+              return await _getBytesFromAsset('lib/assets/cloudy.png', 90);
+            }
+
+          case 'SHOWERS':
+          case 'LIGHT SHOWERS':
+          case 'RAIN':
+          case 'LIGHT RAIN':
+          case 'INTERMITTENT RAIN':
+          case 'INTERMITTENT LIGHT RAIN':
+          case 'DRIZZLE':
+            {
+              return await _getBytesFromAsset('lib/assets/rain.png', 90);
+            }
+
+          case 'HEAVY SHOWERS':
+          case 'HEAVY RAIN':
+          case 'INTERMITTENT HEAVY RAIN':
+            {
+              return await _getBytesFromAsset('lib/assets/heavy_rain.png', 90);
+            }
+
+          case 'MIST':
+          case 'FOG':
+            {
+              return await _getBytesFromAsset('lib/assets/fog.png', 90);
+            }
+
+          case 'SNOW':
+          case 'HAIL':
+          case 'FROST':
+            {
+              return await _getBytesFromAsset('lib/assets/snow.png', 90);
+            }
+
+          case 'THUNDERSTORMS':
+          case 'SHOWERS AND THUNDERSTORMS':
+          case 'RAIN AND THUNDERSTORMS':
+            {
+              return await _getBytesFromAsset('lib/assets/storm.png', 90);
+            }
+
+          default:
+            {
+              return await _getBytesFromAsset('lib/assets/sunny.png', 90);
+            }
+        }
       }
 
-    return await _getBytesFromAsset('lib/assets/cloudy.png', 90);
+    return await _getBytesFromAsset('lib/assets/sunny.png', 90);
   }
 
   // Returns Uint8List from Asset to create GoogleMap's icons

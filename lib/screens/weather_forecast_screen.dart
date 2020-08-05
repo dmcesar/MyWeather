@@ -201,7 +201,7 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
       markers.add(marker);
     }
 
-    
+
     // Update markers collection
     _pinMarkers(markers);
   }
@@ -279,7 +279,7 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
               buildingsEnabled: false,
               trafficEnabled: false,
               compassEnabled: true,
-              zoomControlsEnabled: true,
+              zoomControlsEnabled: false,
               markers: _markers,
               polygons: _polygons,
             ),

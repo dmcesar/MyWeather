@@ -49,8 +49,12 @@ flutter:
 
   assets:
     - lib/assets/cloudy.png
-    - lib/assets/partially_cloudy.png
-    - lib/assets/raining.png
+    - lib/assets/fog.png
+    - lib/assets/heavy_rain.png
+    - lib/assets/partly_cloudy.png
+    - lib/assets/rain.png
+    - lib/assets/snow.png
+    - lib/assets/storm.png
     - lib/assets/sunny.png
 
   # To add assets to your application, add an assets section, like this:

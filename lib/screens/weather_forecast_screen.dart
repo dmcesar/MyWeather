@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -8,6 +9,7 @@ import 'package:myweather/blocs/weather_forecast.dart';
 import 'package:myweather/models/geo_json.dart';
 import 'package:myweather/models/meteorology_data.dart';
 import 'package:date_format/date_format.dart';
+import 'package:myweather/models/weather_descriptor_data.dart';
 
 class WeatherForecastScreen extends StatefulWidget {
 
@@ -42,6 +44,8 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
   Set<Polygon> _polygons = HashSet<Polygon>();
   Set<Marker> _markers = HashSet<Marker>();
 
+  BitmapDescriptor markerIcon;
+
   // Map elements' Ids
   int _polygonIdCnt = 1;
   int _markerIdCnt = 1;
@@ -68,13 +72,15 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
     _weatherForecast.requestMeteorologyDataUntil3DaysByDay(0);
 
     // Listen for async response from stream
-    _weatherForecast.output.listen((data) {
+    _weatherForecast.output.listen((data) async {
 
       // Cast received data to List of MeteorologyData
       final List<MeteorologyData> meteorologyData = data as List;
 
-      // Pin markers to map
-      _pinMarkers(meteorologyData);
+      _createMarkers(meteorologyData);
+
+      // Return from async thread
+      return;
     });
 
     super.initState();
@@ -163,27 +169,48 @@ class _WeatherForecastScreenState extends State<WeatherForecastScreen> {
     }
   }
 
-  void _pinMarkers(List<MeteorologyData> data) {
+  // Returns future list of markers
+  void _createMarkers(List<MeteorologyData> data) async {
 
-    data.forEach( (element) {
+    // Await for weather descriptors list
+    List<WeatherDescriptor> weatherDescriptors = await _weatherForecast.requestWeatherDescriptors();
 
+    List<Marker> markers = List();
+
+    // For each element received, create a marker
+    for(MeteorologyData element in data) {
+
+      // Generate marker ID
       final String markerIdVal = 'marker_id_${_markerIdCnt++}';
 
-      setState(() {
+      // Get icon for marker according to element data
+      final Uint8List markerIcon = await _weatherForecast.getMarkerIcon(weatherDescriptors, element);
 
-        print('Added Marker | Latitude: ${element
-            .latitude} | Longitude: ${element.longitude}');
+      // Generate marker
+      Marker marker = Marker(
+        markerId: MarkerId(markerIdVal),
+        position: LatLng(
+          double.parse(element.latitude),
+          double.parse(element.longitude),
+        ),
+        icon: BitmapDescriptor.fromBytes(markerIcon),
+        consumeTapEvents: false,
+      );
 
-        _markers.add(Marker(
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueCyan),
-          markerId: MarkerId(markerIdVal),
-          position: LatLng(
-            double.parse(element.latitude),
-            double.parse(element.longitude),
-          ),
-          consumeTapEvents: false,
-        ));
-      });
+      // Add marker to list
+      markers.add(marker);
+    }
+
+    // Update markers collection
+    _pinMarkers(markers);
+  }
+
+  // Updates Collection of markers
+  void _pinMarkers(List<Marker> markers) {
+
+    setState(() {
+
+      _markers.addAll(markers);
     });
   }
 
